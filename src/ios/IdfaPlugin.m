@@ -39,14 +39,20 @@
     [self.commandDelegate runInBackground:^{
         if (@available(iOS 14, *)) {
             [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
-                CDVPluginResult* pluginResult =
-                    [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsNSUInteger:status];
+
+                NSNumber* trackingPermission = @(status);
+                NSDictionary* resultData = @{
+                        @"idfa": @"00000000-0000-0000-0000-000000000000",
+                        @"trackingPermission": trackingPermission,
+                        @"trackingLimited": [NSNumber numberWithBool:YES]
+                    };
+
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultData];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             }];
         } else {
-            CDVPluginResult* pluginResult = [CDVPluginResult
-                                             resultWithStatus:CDVCommandStatus_ERROR
-                                             messageAsString:@"requestPermission is supported only for iOS >= 14"];
+            CDVPluginResult* pluginResult =
+                [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"requestPermission is supported only for iOS >= 14"];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }
     }];
